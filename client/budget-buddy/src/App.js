@@ -7,10 +7,10 @@ import Home from './home';
 function App() {
   return (
     <Router>
-      <div style={{ textAlign: 'center', marginTop: 20 }}>
+      {/* <div style={{ textAlign: 'center', marginTop: 20 }}>
         <Link to="/" style={{ margin: 10 }}>Login</Link>
         <Link to="/signup" style={{ margin: 10 }}>Sign Up</Link>
-      </div>
+      </div> */}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
