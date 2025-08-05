@@ -43,7 +43,7 @@ function Home() {
                 </button>
               </li>
               <li className="nav-item mb-2">
-                <button className="btn btn-light w-100 text-start">
+                <button className="btn btn-light w-100 text-start" onClick={() => navigate('/expense-history')}>
                   <i className="bi bi-clock-history me-2"></i>
                   Expense History
                 </button>
@@ -70,45 +70,6 @@ function Home() {
                 >
                   Logout
                 </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-12">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Welcome to Budget Buddy!</h5>
-                  <p className="card-text">Hello, <strong>{username}</strong>! You are successfully logged in.</p>
-                  <p className="card-text">This is your home page where you can manage your budget.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="row mt-4">
-            <div className="col-md-4">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h5 className="card-title">Total Expenses</h5>
-                  <p className="card-text display-6 text-primary">$0</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h5 className="card-title">Monthly Budget</h5>
-                  <p className="card-text display-6 text-success">$0</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h5 className="card-title">Remaining</h5>
-                  <p className="card-text display-6 text-info">$0</p>
-                </div>
               </div>
             </div>
           </div>

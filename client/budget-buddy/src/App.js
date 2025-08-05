@@ -4,6 +4,7 @@ import Login from './Login';
 import SignUp from './SignUp';
 import Home from './home';
 import AddExpense from './AddExpense';
+import History from './history';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/home" element={<Home />} />
         <Route path="/add-expense" element={<AddExpense />} />
+        <Route path="/expense-history" element={<History />} />
       </Routes>
     </Router>
     

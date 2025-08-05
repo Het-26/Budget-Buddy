@@ -38,3 +38,31 @@ class Expense(models.Model):
 
     class Meta:
         ordering = ['-date', '-created_at']
+
+class Income(models.Model):
+    INCOME_CATEGORY_CHOICES = [
+        ('Food & Dining', 'Food & Dining'),
+        ('Transportation', 'Transportation'),
+        ('Shopping', 'Shopping'),
+        ('Entertainment', 'Entertainment'),
+        ('Healthcare', 'Healthcare'),
+        ('Utilities', 'Utilities'),
+        ('Housing', 'Housing'),
+        ('Education', 'Education'),
+        ('Travel', 'Travel'),
+        ('Other', 'Other'),
+    ]
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='incomes')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    source = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, choices=INCOME_CATEGORY_CHOICES, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.amount} - {self.source} - {self.category}"
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
