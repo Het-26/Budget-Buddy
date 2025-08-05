@@ -82,10 +82,10 @@ class AddExpenseAPIView(APIView):
             amount = request.data.get('amount')
             description = request.data.get('description')
             category = request.data.get('category')
-            date = request.data.get('date')
+            date_str = request.data.get('date')
             
             # Validate required fields
-            if not all([amount, description, category, date]):
+            if not all([amount, description, category, date_str]):
                 return Response({
                     'success': False,
                     'message': 'All fields are required: amount, description, category, date'
@@ -103,6 +103,15 @@ class AddExpenseAPIView(APIView):
                 return Response({
                     'success': False,
                     'message': 'Invalid amount format'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate and convert date
+            try:
+                date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'message': 'Invalid date format. Use YYYY-MM-DD'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Validate category
@@ -127,6 +136,7 @@ class AddExpenseAPIView(APIView):
                 'message': 'Expense added successfully',
                 'expense': {
                     'id': expense.id,
+                    'user_id': expense.user.id,
                     'username': expense.user.username,
                     'amount': str(expense.amount),
                     'description': expense.description,
@@ -156,6 +166,7 @@ class GetExpensesAPIView(APIView):
             for expense in expenses:
                 expenses_data.append({
                     'id': expense.id,
+                    'user_id': expense.user.id,
                     'username': expense.user.username,
                     'amount': str(expense.amount),
                     'description': expense.description,
@@ -186,6 +197,7 @@ class ExpenseDetailAPIView(APIView):
             expense = Expense.objects.get(id=expense_id, user=user)
             expense_data = {
                 'id': expense.id,
+                'user_id': expense.user.id,
                 'username': expense.user.username,
                 'amount': str(expense.amount),
                 'description': expense.description,
@@ -243,12 +255,20 @@ class ExpenseDetailAPIView(APIView):
                 expense.category = request.data['category']
             
             if 'date' in request.data:
-                expense.date = request.data['date']
+                try:
+                    date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
+                    expense.date = date
+                except (ValueError, TypeError):
+                    return Response({
+                        'success': False,
+                        'message': 'Invalid date format. Use YYYY-MM-DD'
+                    }, status=status.HTTP_400_BAD_REQUEST)
             
             expense.save()
             
             expense_data = {
                 'id': expense.id,
+                'user_id': expense.user.id,
                 'username': expense.user.username,
                 'amount': str(expense.amount),
                 'description': expense.description,
