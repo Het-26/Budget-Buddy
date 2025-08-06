@@ -1,46 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import api from './axiosConfig';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   // Check if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/home');
+      window.location.href = '/home';
     }
-  }, [navigate]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
     try {
-      const response = await fetch('http://localhost:8000/api/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+      const response = await api.post('login/', {
+        username,
+        password
       });
-      const data = await response.json();
       
-      if (data.success && data.token) {
+      if (response.data.success && response.data.token) {
         // Store JWT token in localStorage
-        localStorage.setItem('token', data.token);
+        localStorage.setItem('token', response.data.token);
         localStorage.setItem('username', username);
         setMessage('Login successful! Redirecting...');
         // Redirect to home page after successful login
         setTimeout(() => {
-          navigate('/home');
+          window.location.href = '/home';
         }, 1000);
       } else {
-        setMessage(data.message);
+        setMessage(response.data.message);
       }
       
     } catch (error) {

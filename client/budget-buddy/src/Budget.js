@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
+import api from './axiosConfig';
 
 const CATEGORY_OPTIONS = [
   'Food & Dining',
@@ -42,38 +43,24 @@ function Budget() {
   }, [budgets]);
 
   const fetchBudgets = async () => {
-    const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:8000/api/budgets/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setBudgets(data.budgets);
+      const response = await api.get('budgets/');
+      if (response.data.success) {
+        setBudgets(response.data.budgets);
       }
     } catch (err) {
-      // Optionally handle error
+      // Error handled by interceptor
     }
   };
 
   const fetchExpensesForCategories = async () => {
-    const token = localStorage.getItem('token');
     const newExpenses = {};
     await Promise.all(
       budgets.map(async (budget) => {
         try {
-          const response = await fetch(`http://localhost:8000/api/category-expense-total/?category=${encodeURIComponent(budget.category)}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          const data = await response.json();
-          if (response.ok && data.success) {
-            newExpenses[budget.category] = data.total;
+          const response = await api.get(`category-expense-total/?category=${encodeURIComponent(budget.category)}`);
+          if (response.data.success) {
+            newExpenses[budget.category] = response.data.total;
           } else {
             newExpenses[budget.category] = '0';
           }
@@ -90,38 +77,33 @@ function Budget() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleBack = () => {
+    navigate('/home');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
     setLoading(true);
-    const token = localStorage.getItem('token');
     if (!form.amount || !form.category || !form.source || !form.date) {
       setError('All fields are required.');
       setLoading(false);
       return;
     }
     try {
-      const response = await fetch('http://localhost:8000/api/add-budget/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          amount: form.amount,
-          category: form.category,
-          source: form.source,
-          date: form.date
-        })
+      const response = await api.post('add-budget/', {
+        amount: form.amount,
+        category: form.category,
+        source: form.source,
+        date: form.date
       });
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (response.data.success) {
         setMessage('Budget created successfully!');
         setForm({ amount: '', category: '', source: '', date: '' });
         fetchBudgets();
       } else {
-        setError(data.message || 'Failed to create budget');
+        setError(response.data.message || 'Failed to create budget');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -139,7 +121,10 @@ function Budget() {
             <h1 className="h2">Budget</h1>
             <div className="btn-toolbar mb-2 mb-md-0">
               <div className="btn-group me-2">
-                <button onClick={() => navigate('/home')} className="btn btn-secondary">
+                <button 
+                  onClick={handleBack} 
+                  className="btn btn-secondary"
+                >
                   <i className="bi bi-arrow-left me-1"></i>
                   Back to Dashboard
                 </button>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import api from './axiosConfig';
 
 function SignUp() {
   const [username, setUsername] = useState('');
@@ -11,15 +12,17 @@ function SignUp() {
     setLoading(true);
     setMessage('');
     try {
-      const response = await fetch('http://localhost:8000/api/signup/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+      const response = await api.post('signup/', {
+        username,
+        password
       });
-      const data = await response.json();
-      setMessage(data.message);
+      if (response.data.success) {
+        setMessage('Sign up successful!');
+        setUsername('');
+        setPassword('');
+      } else {
+        setMessage(response.data.message || 'Failed to sign up');
+      }
     } catch (error) {
       setMessage('Error connecting to server');
     }
@@ -54,7 +57,7 @@ function SignUp() {
           {loading ? 'Signing up...' : 'Sign Up'}
         </button>
       </form>
-      {message && <div style={{ marginTop: 20, color: message === 'Sign up successful' ? 'green' : 'red' }}>{message}</div>}
+      {message && <div style={{ marginTop: 20, color: message === 'Sign up successful!' ? 'green' : 'red' }}>{message}</div>}
     </div>
   );
 }

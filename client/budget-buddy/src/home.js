@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import api from './axiosConfig';
 import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -51,15 +52,9 @@ function Home() {
 
   const fetchExpenses = async (token) => {
     try {
-      const response = await fetch('http://localhost:8000/api/expenses/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        calculateTotals(data.expenses);
+      const response = await api.get('expenses/');
+      if (response.data.success) {
+        calculateTotals(response.data.expenses);
       }
     } catch (err) {
       // Optionally handle error

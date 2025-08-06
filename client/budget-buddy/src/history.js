@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import api from './axiosConfig';
 
 function History() {
   const [expenses, setExpenses] = useState([]);
@@ -24,17 +25,11 @@ function History() {
         navigate('/');
         return;
       }
-      const response = await fetch('http://localhost:8000/api/expenses/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setExpenses(data.expenses);
+      const response = await api.get('expenses/');
+      if (response.data.success) {
+        setExpenses(response.data.expenses);
       } else {
-        setError(data.message || 'Failed to fetch expenses');
+        setError(response.data.message || 'Failed to fetch expenses');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -65,27 +60,18 @@ function History() {
     setModalError('');
     setModalMessage('');
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/expenses/${editExpense.id}/`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: editExpense.amount,
-          description: editExpense.description,
-          category: editExpense.category,
-          date: editExpense.date,
-        }),
+      const response = await api.put(`expenses/${editExpense.id}/`, {
+        amount: editExpense.amount,
+        description: editExpense.description,
+        category: editExpense.category,
+        date: editExpense.date,
       });
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (response.data.success) {
         setModalMessage('Expense updated successfully!');
         setShowModal(false);
         fetchExpenses();
       } else {
-        setModalError(data.message || 'Failed to update expense');
+        setModalError(response.data.message || 'Failed to update expense');
       }
     } catch (err) {
       setModalError('Network error. Please try again.');
@@ -101,21 +87,13 @@ function History() {
     setModalError('');
     setModalMessage('');
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/expenses/${deletingId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
+      const response = await api.delete(`expenses/${deletingId}/`);
+      if (response.data.success) {
         setModalMessage('Expense deleted successfully!');
         setDeletingId(null);
         fetchExpenses();
       } else {
-        setModalError(data.message || 'Failed to delete expense');
+        setModalError(response.data.message || 'Failed to delete expense');
       }
     } catch (err) {
       setModalError('Network error. Please try again.');

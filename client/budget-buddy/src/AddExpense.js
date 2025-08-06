@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import api from './axiosConfig';
 
 function AddExpense() {
   const [formData, setFormData] = useState({
@@ -40,19 +41,9 @@ function AddExpense() {
     setMessage('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/add-expense/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('add-expense/', formData);
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (response.data.success) {
         setMessage('Expense added successfully!');
         setFormData({
           amount: '',
@@ -61,7 +52,7 @@ function AddExpense() {
           date: new Date().toISOString().split('T')[0]
         });
       } else {
-        setMessage(data.message || 'Failed to add expense');
+        setMessage(response.data.message || 'Failed to add expense');
       }
     } catch (error) {
       setMessage('Network error. Please try again.');
@@ -108,9 +99,9 @@ function AddExpense() {
             </div>
           </div>
 
-          <div className="row">
-            <div className="col-md-8 col-lg-6">
-              <div className="card">
+          {/* <div className="row">
+            <div className="col-md-8 col-lg-6"> */}
+              <div className="card" style={{ maxWidth: 900, margin: '40px auto', padding: 24, border: '1px solid #ccc', borderRadius: 8 }}>
                 <div className="card-body">
                   <h5 className="card-title mb-4">Add New Expense</h5>
                   
@@ -200,10 +191,10 @@ function AddExpense() {
                     </div>
                   </form>
                 </div>
-              </div>
-            </div>
+              {/* </div> */}
+            {/* </div> */}
 
-            <div className="col-md-4 col-lg-6">
+            {/* <div className="col-md-4 col-lg-6">
               <div className="card">
                 <div className="card-body">
                   <h5 className="card-title">Quick Tips</h5>
@@ -227,7 +218,7 @@ function AddExpense() {
                   </ul>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </main>
       </div>
