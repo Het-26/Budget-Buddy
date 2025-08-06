@@ -5,12 +5,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
-from .models import Users, Expense
+from .models import Users, Expense, Budget
 import jwt
 import datetime
 from django.conf import settings
 from functools import wraps
 from decimal import Decimal
+from django.db import models
 
 # Create your views here.
 
@@ -311,3 +312,97 @@ class ExpenseDetailAPIView(APIView):
                 'success': False,
                 'message': f'Error deleting expense: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AddBudgetAPIView(APIView):
+    def post(self, request):
+        user = get_user_from_token(request)
+        if not user:
+            return Response({'success': False, 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            amount = request.data.get('amount')
+            date_str = request.data.get('date')
+            source = request.data.get('source')
+            category = request.data.get('category')
+            # Validate required fields
+            if not all([amount, date_str, source, category]):
+                return Response({'success': False, 'message': 'All fields are required: amount, date, source, category'}, status=status.HTTP_400_BAD_REQUEST)
+            # Validate amount
+            try:
+                amount = Decimal(str(amount))
+                if amount <= 0:
+                    return Response({'success': False, 'message': 'Amount must be greater than 0'}, status=status.HTTP_400_BAD_REQUEST)
+            except (ValueError, TypeError):
+                return Response({'success': False, 'message': 'Invalid amount format'}, status=status.HTTP_400_BAD_REQUEST)
+            # Validate and convert date
+            try:
+                date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                return Response({'success': False, 'message': 'Invalid date format. Use YYYY-MM-DD'}, status=status.HTTP_400_BAD_REQUEST)
+            # Validate category
+            valid_categories = [choice[0] for choice in Budget.BUDGET_CATEGORY_CHOICES]
+            if category not in valid_categories:
+                return Response({'success': False, 'message': f'Invalid category. Must be one of: {", ".join(valid_categories)}'}, status=status.HTTP_400_BAD_REQUEST)
+            # Create budget
+            budget = Budget.objects.create(
+                user=user,
+                amount=amount,
+                date=date,
+                source=source,
+                category=category
+            )
+            return Response({
+                'success': True,
+                'message': 'Budget added successfully',
+                'budget': {
+                    'id': budget.id,
+                    'user_id': budget.user.id,
+                    'username': budget.user.username,
+                    'amount': str(budget.amount),
+                    'date': budget.date.isoformat(),
+                    'source': budget.source,
+                    'category': budget.category,
+                    'created_at': budget.created_at.isoformat(),
+                    'updated_at': budget.updated_at.isoformat()
+                }
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'success': False, 'message': f'Error creating budget: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetBudgetsAPIView(APIView):
+    def get(self, request):
+        user = get_user_from_token(request)
+        if not user:
+            return Response({'success': False, 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        budgets = Budget.objects.filter(user=user).order_by('-date', '-created_at')
+        budget_list = [
+            {
+                'id': b.id,
+                'amount': str(b.amount),
+                'category': b.category,
+                'source': b.source,
+                'date': b.date.isoformat(),
+                'created_at': b.created_at.isoformat(),
+                'updated_at': b.updated_at.isoformat()
+            }
+            for b in budgets
+        ]
+        return Response({'success': True, 'budgets': budget_list})
+
+class CategoryExpenseTotalAPIView(APIView):
+    def get(self, request):
+        user = get_user_from_token(request)
+        if not user:
+            return Response({'success': False, 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        category = request.query_params.get('category')
+        if not category:
+            return Response({'success': False, 'message': 'Category is required as a query parameter.'}, status=status.HTTP_400_BAD_REQUEST)
+        now = datetime.datetime.now()
+        first_day = now.replace(day=1)
+        expenses = Expense.objects.filter(
+            user=user,
+            category=category,
+            date__gte=first_day.date(),
+            date__lte=now.date()
+        )
+        total = expenses.aggregate(total=models.Sum('amount'))['total'] or 0
+        return Response({'success': True, 'category': category, 'total': str(total)})

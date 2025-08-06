@@ -5,6 +5,7 @@ import SignUp from './SignUp';
 import Home from './home';
 import AddExpense from './AddExpense';
 import History from './history';
+import Budget from './Budget';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/add-expense" element={<AddExpense />} />
         <Route path="/expense-history" element={<History />} />
+        <Route path="/budget" element={<Budget />} />
       </Routes>
     </Router>
     
