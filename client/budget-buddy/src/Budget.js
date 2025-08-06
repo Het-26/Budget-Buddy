@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const CATEGORY_OPTIONS = [
   'Food & Dining',
@@ -15,6 +16,7 @@ const CATEGORY_OPTIONS = [
 ];
 
 function Budget() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     amount: '',
     category: '',
@@ -135,7 +137,14 @@ function Budget() {
         <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
           <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 className="h2">Budget</h1>
-            
+            <div className="btn-toolbar mb-2 mb-md-0">
+              <div className="btn-group me-2">
+                <button onClick={() => navigate('/home')} className="btn btn-secondary">
+                  <i className="bi bi-arrow-left me-1"></i>
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
           </div>
           <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, border: '1px solid #ccc', borderRadius: 8 }}>
             <h4 className="mb-4">Create a Budget</h4>
