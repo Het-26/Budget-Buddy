@@ -5,6 +5,21 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --bs-primary-rgb: 45, 49, 66;
+  --bs-primary: #2d3142;
+  --bs-secondary: #BFC0C0;
+  --bs-secondary-rgb: 191,192, 192;
+  --bs-btn-bg: #2d3142;
+}
+
+.btn-primary {
+  background-color: #2d3142 !important;
+  border-color: #2d3142 !important;
+}
+
+.btn-outline-secondary {
+  background-color: #BFC0C0 !important;
+  border-color: #BFC0C0 !important;
 }
 
 code {

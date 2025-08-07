@@ -179,12 +179,13 @@ function History() {
             <div className="col-md-3 d-flex align-items-end">
               <button className="btn btn-outline-secondary me-2" onClick={handleClearFilter} disabled={!filterFrom && !filterTo}>Clear Filter</button>
             </div>
-            <div className="col-md-3 d-flex align-items-end justify-content-end">
-              <select 
-                className="form-select me-2" 
-                value={selectedPrompt} 
+          </div>
+          <div className="row mb-3">
+            <div className="col-md-3">
+              <select
+                className="form-select col-md-3"
+                value={selectedPrompt}
                 onChange={(e) => setSelectedPrompt(e.target.value)}
-                style={{ maxWidth: '300px' }}
               >
                 <option value="Are my expenses increasing or decreasing over time?">Are my expenses increasing or decreasing over time?</option>
                 <option value="Which category has shown the biggest change over the past month?">Which category has shown the biggest change over the past month?</option>
@@ -192,17 +193,20 @@ function History() {
                 <option value="Which type of expense is most frequent?">Which type of expense is most frequent?</option>
                 <option value="Other">Other</option>
               </select>
+            </div>
+            <div className="col-md-3">
               {selectedPrompt === 'Other' && (
                 <input
                   type="text"
-                  className="form-control me-2"
+                  className="form-control col-md-3"
                   placeholder="Enter your custom question..."
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
-                  style={{ maxWidth: '300px' }}
                 />
               )}
-              <button className="btn btn-primary" onClick={handleAIInsight}>AI Insight</button>
+            </div>
+            <div className="col-md-3 d-flex align-items-end">
+              <button className="btn btn-primary" style={{ maxWidth: '300px' }} onClick={handleAIInsight}>AI Insight</button>
             </div>
           </div>
 
