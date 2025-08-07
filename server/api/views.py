@@ -12,6 +12,8 @@ from django.conf import settings
 from functools import wraps
 from decimal import Decimal
 from django.db import models
+import requests
+import json
 
 # Create your views here.
 
@@ -406,3 +408,52 @@ class CategoryExpenseTotalAPIView(APIView):
         )
         total = expenses.aggregate(total=models.Sum('amount'))['total'] or 0
         return Response({'success': True, 'category': category, 'total': str(total)})
+
+class OpenAIExpenseSummaryAPIView(APIView):
+    def post(self, request):
+        api_key = getattr(settings, 'OPENAI_API_KEY', None)
+        if not api_key:
+            return Response({'success': False, 'message': 'OpenAI API key not configured.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        expenses = request.data.get('expenses')
+        prompt = request.data.get('prompt', "Please give me a high-level summary of my expenses")
+        if not expenses or not isinstance(expenses, list):
+            return Response({'success': False, 'message': 'Expenses list is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Format expenses for prompt
+        expense_lines = []
+        for exp in expenses:
+            line = f"amount: {exp.get('amount')}, category: {exp.get('category')}, date: {exp.get('date')}"
+            expense_lines.append(line)
+        expense_str = '   '.join(expense_lines)
+        user_prompt = f"Here is my expense data:\n\nexpenses: [{expense_str}]\n\n{prompt}\n Don't ask follow up questions, just give me the summary."
+
+        payload = json.dumps({
+            "model": "gpt-4.1-nano",
+            "temperature": 0.7,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a smart assistant that analyzes expense data and provides summaries."
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt
+                }
+            ]
+        })
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'
+        }
+        try:
+            print(payload)
+            response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, data=payload)
+            if response.status_code == 200:
+                result = response.json()
+                summary = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+                return Response({'success': True, 'summary': summary, 'openai_response': result})
+            else:
+                return Response({'success': False, 'message': 'OpenAI API error', 'details': response.text}, status=response.status_code)
+        except Exception as e:
+            return Response({'success': False, 'message': f'Error calling OpenAI API: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

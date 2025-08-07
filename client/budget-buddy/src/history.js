@@ -14,6 +14,11 @@ function History() {
   const [deletingId, setDeletingId] = useState(null);
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiSummary, setAiSummary] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState('Are my expenses increasing or decreasing over time?');
+  const [customPrompt, setCustomPrompt] = useState('');
   const navigate = useNavigate();
 
   const fetchExpenses = async () => {
@@ -117,6 +122,32 @@ function History() {
     setFilterTo('');
   };
 
+  const handleAIInsight = async () => {
+    setAiLoading(true);
+    setShowAIModal(true);
+    try {
+      const promptToSend = selectedPrompt === 'Other' ? customPrompt : selectedPrompt;
+      const response = await api.post('openai-expense-summary/', {
+        expenses: filteredExpenses,
+        prompt: promptToSend
+      });
+      if (response.data.success) {
+        setAiSummary(response.data.summary);
+      } else {
+        setAiSummary('Failed to get AI insight: ' + response.data.message);
+      }
+    } catch (err) {
+      setAiSummary('Error getting AI insight. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleCloseAIModal = () => {
+    setShowAIModal(false);
+    setAiSummary('');
+  };
+
   return (
     <div className="container-fluid">
       <div className="row">
@@ -147,6 +178,31 @@ function History() {
             </div>
             <div className="col-md-3 d-flex align-items-end">
               <button className="btn btn-outline-secondary me-2" onClick={handleClearFilter} disabled={!filterFrom && !filterTo}>Clear Filter</button>
+            </div>
+            <div className="col-md-3 d-flex align-items-end justify-content-end">
+              <select 
+                className="form-select me-2" 
+                value={selectedPrompt} 
+                onChange={(e) => setSelectedPrompt(e.target.value)}
+                style={{ maxWidth: '300px' }}
+              >
+                <option value="Are my expenses increasing or decreasing over time?">Are my expenses increasing or decreasing over time?</option>
+                <option value="Which category has shown the biggest change over the past month?">Which category has shown the biggest change over the past month?</option>
+                <option value="On which day of the week do I spend the most?">On which day of the week do I spend the most?</option>
+                <option value="Which type of expense is most frequent?">Which type of expense is most frequent?</option>
+                <option value="Other">Other</option>
+              </select>
+              {selectedPrompt === 'Other' && (
+                <input
+                  type="text"
+                  className="form-control me-2"
+                  placeholder="Enter your custom question..."
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  style={{ maxWidth: '300px' }}
+                />
+              )}
+              <button className="btn btn-primary" onClick={handleAIInsight}>AI Insight</button>
             </div>
           </div>
 
@@ -261,6 +317,37 @@ function History() {
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" onClick={handleDeleteCancel}>Cancel</button>
                     <button type="button" className="btn btn-danger" onClick={handleDeleteConfirm}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI Insight Modal */}
+          {showAIModal && (
+            <div className="modal show fade d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.3)' }}>
+              <div className="modal-dialog modal-lg">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">AI Expense Insight</h5>
+                    <button type="button" className="btn-close" onClick={handleCloseAIModal}></button>
+                  </div>
+                  <div className="modal-body">
+                    {aiLoading ? (
+                      <div className="text-center">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                        <p className="mt-2">Analyzing your expenses...</p>
+                      </div>
+                    ) : (
+                      <div className="ai-summary">
+                        <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{aiSummary}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={handleCloseAIModal}>Close</button>
                   </div>
                 </div>
               </div>

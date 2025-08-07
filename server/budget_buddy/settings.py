@@ -134,3 +134,6 @@ JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_DELTA = 24 * 60 * 60  # 24 hours in seconds
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# OpenAI API Key (set your real key in production or use environment variable)
+OPENAI_API_KEY = ''

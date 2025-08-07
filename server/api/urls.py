@@ -8,7 +8,8 @@ from .views import (
     ExpenseDetailAPIView,
     AddBudgetAPIView,
     GetBudgetsAPIView,
-    CategoryExpenseTotalAPIView
+    CategoryExpenseTotalAPIView,
+    OpenAIExpenseSummaryAPIView,
 )
 
 urlpatterns = [
@@ -21,4 +22,5 @@ urlpatterns = [
     path('add-budget/', AddBudgetAPIView.as_view(), name='add_budget_api'),
     path('budgets/', GetBudgetsAPIView.as_view(), name='get_budgets_api'),
     path('category-expense-total/', CategoryExpenseTotalAPIView.as_view(), name='category_expense_total_api'),
+    path('openai-expense-summary/', OpenAIExpenseSummaryAPIView.as_view(), name='openai_expense_summary_api'),
 ] 
