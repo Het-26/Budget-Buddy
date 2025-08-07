@@ -17,9 +17,12 @@ function SignUp() {
         password
       });
       if (response.data.success) {
-        setMessage('Sign up successful!');
+        setMessage('Sign up successful! Redirecting to login...');
         setUsername('');
         setPassword('');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       } else {
         setMessage(response.data.message || 'Failed to sign up');
       }
@@ -56,8 +59,15 @@ function SignUp() {
         <button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>
           {loading ? 'Signing up...' : 'Sign Up'}
         </button>
+        <button
+        type="button"
+        onClick={() => window.location.href = '/'}
+        style={{ width: '100%', padding: 10, marginTop: 10, backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: 4 }}
+        >
+          Login
+        </button>
       </form>
-      {message && <div style={{ marginTop: 20, color: message === 'Sign up successful!' ? 'green' : 'red' }}>{message}</div>}
+      {message && <div style={{ marginTop: 20, color: message.includes('successful') ? 'green' : 'red' }}>{message}</div>}
     </div>
   );
 }

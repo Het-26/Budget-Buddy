@@ -79,13 +79,17 @@ function Login() {
         <button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
+        
       </form>
       {message && <div style={{ marginTop: 20, color: message.includes('successful') ? 'green' : 'red' }}>{message}</div>}
-      {localStorage.getItem('token') && (
-        <button onClick={handleLogout} style={{ width: '100%', padding: 10, marginTop: 10, backgroundColor: '#ff4444', color: 'white', border: 'none', borderRadius: 4 }}>
-          Logout
-        </button>
-      )}
+      
+      <button
+        type="button"
+        onClick={() => window.location.href = '/signup'}
+        style={{ width: '100%', padding: 10, marginTop: 10, backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: 4 }}
+      >
+        Sign Up
+      </button>
     </div>
   );
 }
