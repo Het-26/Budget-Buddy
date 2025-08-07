@@ -76,7 +76,7 @@ function Login() {
             style={{ width: '100%', padding: 8, marginTop: 4 }}
           />
         </div>
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: 10, backgroundColor: '#28a745', border: 'none', color: 'white', borderRadius: 4 }}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
         

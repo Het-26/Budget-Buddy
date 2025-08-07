@@ -6,7 +6,7 @@ function Navbar({ active }) {
   return (
     <nav className="col-md-3 col-lg-2 d-md-block bg-primary sidebar collapse" style={{ minHeight: '100vh' }}>
       <div className="position-sticky pt-3">
-        <div className="text-center mb-4">
+        <div className="text-center mt-5 mb-5">
           <h2 className="text-white">Budget Buddy</h2>
         </div>
         <ul className="nav flex-column">

@@ -56,13 +56,13 @@ function SignUp() {
             style={{ width: '100%', padding: 8, marginTop: 4 }}
           />
         </div>
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: 10, backgroundColor: '#28a745', border: 'none', color: 'white', borderRadius: 4 }}>
           {loading ? 'Signing up...' : 'Sign Up'}
         </button>
         <button
         type="button"
         onClick={() => window.location.href = '/'}
-        style={{ width: '100%', padding: 10, marginTop: 10, backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: 4 }}
+        style={{ width: '100%', padding: 10, marginTop: 10, backgroundColor: '#007bff', border: 'none', color: 'white', borderRadius: 4 }}
         >
           Login
         </button>

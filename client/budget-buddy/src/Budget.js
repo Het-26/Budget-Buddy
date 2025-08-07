@@ -29,6 +29,11 @@ function Budget() {
   const [loading, setLoading] = useState(false);
   const [budgets, setBudgets] = useState([]);
   const [expensesByCategory, setExpensesByCategory] = useState({});
+  const [editBudget, setEditBudget] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     fetchBudgets();
@@ -110,6 +115,62 @@ function Budget() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditClick = (budget) => {
+    setEditBudget({ ...budget });
+    setEditError('');
+    setShowEditModal(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditBudget((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = async (e) => {
+    e.preventDefault();
+    setEditError('');
+    try {
+      const response = await api.put(`budgets/${editBudget.id}/`, {
+        amount: editBudget.amount,
+        category: editBudget.category,
+        source: editBudget.source,
+        date: editBudget.date
+      });
+      if (response.data.success) {
+        setShowEditModal(false);
+        fetchBudgets();
+      } else {
+        setEditError(response.data.message || 'Failed to update budget');
+      }
+    } catch (err) {
+      setEditError('Network error. Please try again.');
+    }
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setDeleteError('');
+  };
+
+  const handleDeleteConfirm = async () => {
+    setDeleteError('');
+    try {
+      const response = await api.delete(`budgets/${deleteId}/`);
+      if (response.data.success) {
+        setDeleteId(null);
+        fetchBudgets();
+      } else {
+        setDeleteError(response.data.message || 'Failed to delete budget');
+      }
+    } catch (err) {
+      setDeleteError('Network error. Please try again.');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteId(null);
   };
 
   return (
@@ -212,6 +273,7 @@ function Budget() {
                       <th>Source</th>
                       <th>Date</th>
                       <th>Expenses</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -222,10 +284,82 @@ function Budget() {
                         <td>{budget.source}</td>
                         <td>{budget.date}</td>
                         <td>${expensesByCategory[budget.category] || '0.00'}</td>
+                        <td>
+                          <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditClick(budget)}>
+                            <i className="bi bi-pencil-square"></i> Edit
+                          </button>
+                          <button className="btn btn-sm btn-danger" onClick={() => handleDeleteClick(budget.id)}>
+                            <i className="bi bi-trash"></i> Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            {/* Edit Modal */}
+            {showEditModal && editBudget && (
+              <div className="modal show fade d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <form onSubmit={handleEditSave}>
+                      <div className="modal-header">
+                        <h5 className="modal-title">Edit Budget</h5>
+                        <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
+                      </div>
+                      <div className="modal-body">
+                        {editError && <div className="alert alert-danger">{editError}</div>}
+                        <div className="mb-3">
+                          <label className="form-label">Amount</label>
+                          <input type="number" className="form-control" name="amount" value={editBudget.amount} onChange={handleEditChange} min="0" step="0.01" required />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Category</label>
+                          <select className="form-select" name="category" value={editBudget.category} onChange={handleEditChange} required>
+                            <option value="">Select a category</option>
+                            {CATEGORY_OPTIONS.map((cat, idx) => (
+                              <option key={idx} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Source</label>
+                          <input type="text" className="form-control" name="source" value={editBudget.source} onChange={handleEditChange} required />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Date</label>
+                          <input type="date" className="form-control" name="date" value={editBudget.date} onChange={handleEditChange} required />
+                        </div>
+                      </div>
+                      <div className="modal-footer">
+                        <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>
+                        <button type="submit" className="btn btn-primary">Save Changes</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {deleteId && (
+              <div className="modal show fade d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Confirm Delete</h5>
+                      <button type="button" className="btn-close" onClick={handleDeleteCancel}></button>
+                    </div>
+                    <div className="modal-body">
+                      {deleteError && <div className="alert alert-danger">{deleteError}</div>}
+                      <p>Are you sure you want to delete this budget?</p>
+                    </div>
+                    <div className="modal-footer">
+                      <button type="button" className="btn btn-secondary" onClick={handleDeleteCancel}>Cancel</button>
+                      <button type="button" className="btn btn-danger" onClick={handleDeleteConfirm}>Delete</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
